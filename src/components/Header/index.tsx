@@ -15,10 +15,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut, Moon, Sun, Bookmark } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { logout, user } = useAuth();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -38,16 +40,13 @@ export function Header() {
       .slice(0, 2);
   };
 
-  const onLogout = () => {};
-  const user = { name: "bipul dubey", avatar: "", email: "bipul@example.com" };
-
   if (!mounted) {
     return null; // Prevent hydration mismatch
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
+      <div className="flex h-14 items-center justify-between px-4 w-full">
         {/* Logo Section */}
         <Link href="/" className="flex items-center space-x-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
@@ -62,17 +61,24 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                <AvatarImage
+                  src={user?.photoURL ?? "image"}
+                  alt={user?.displayName ?? user?.email ?? "profile-image"}
+                />
+                <AvatarFallback>
+                  {getInitials(user?.displayName ?? user?.email ?? "")}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.displayName ?? ""}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {user.email}
+                  {user?.email ?? ""}
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -100,7 +106,7 @@ export function Header() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={onLogout}
+              onClick={logout}
               className="cursor-pointer text-red-600 focus:text-red-600"
             >
               <LogOut className="mr-2 h-4 w-4" />
