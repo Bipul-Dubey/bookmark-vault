@@ -48,7 +48,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 w-full">
         {/* Logo Section */}
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/bookmark" className="flex items-center space-x-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
             <Bookmark className="h-4 w-4" />
           </div>

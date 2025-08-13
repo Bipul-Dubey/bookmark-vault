@@ -16,9 +16,19 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  deleteUser,
 } from "firebase/auth";
 import { auth, db, googleProvider } from "@/lib/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { toast } from "sonner";
 
 const getAuthErrorMessage = (errorCode: string) => {
@@ -58,6 +68,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (displayName: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -68,6 +79,7 @@ const AuthContext = createContext<AuthContextType>({
   loginWithGoogle: async () => {},
   logout: async () => {},
   updateUserProfile: async () => {},
+  deleteAccount: async () => {},
 });
 
 export const useAuth = () => {
@@ -171,6 +183,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const deleteAccount = async () => {
+    if (!user) throw new Error("No user authenticated");
+
+    try {
+      // Delete all user's bookmarks first
+      const bookmarksQuery = query(
+        collection(db, "bookmarks"),
+        where("userId", "==", user.uid)
+      );
+      const bookmarksSnapshot = await getDocs(bookmarksQuery);
+
+      // Delete all user's bookmarks
+      const deletePromises = bookmarksSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deletePromises);
+
+      // Delete user profile document
+      await deleteDoc(doc(db, "users", user.uid));
+
+      // Finally, delete the user account
+      await deleteUser(user);
+
+      console.log("Account deleted successfully");
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+
+      if (error.code === "auth/requires-recent-login") {
+        throw new Error(
+          "For security reasons, please sign out and sign back in before deleting your account."
+        );
+      }
+
+      throw new Error("Failed to delete account. Please try again.");
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -179,6 +228,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loginWithGoogle,
     logout,
     updateUserProfile,
+    deleteAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

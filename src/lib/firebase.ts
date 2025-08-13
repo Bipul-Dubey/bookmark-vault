@@ -25,11 +25,16 @@ export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
 // Connect to Firestore emulator in development (browser only)
-if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+if (
+  process.env.NODE_ENV === "development" &&
+  process.env.NEXT_PUBLIC_USE_FIRESTORE_EMULATOR === "true" &&
+  typeof window !== "undefined"
+) {
   try {
     connectFirestoreEmulator(db, "localhost", 8080);
+    console.log("Connected to Firestore emulator");
   } catch (error) {
-    console.log("Firestore emulator already connected");
+    console.log("Firestore emulator already connected or failed to connect");
   }
 }
 
