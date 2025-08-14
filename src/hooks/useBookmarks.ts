@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-query";
 import {
   AdvancedFirestoreService,
-  BookmarkQueryResult,
   BookmarkSearchParams,
 } from "@/lib/firestore-advanced";
 import { IBookmark } from "@/types";
@@ -39,24 +38,16 @@ export function useBookmarksCount(searchParams: BookmarkSearchParams = {}) {
 
 export function useInfiniteBookmarks(searchParams: BookmarkSearchParams = {}) {
   const { user } = useAuth();
-  const pageSize = 20;
 
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.bookmarks.infinite({
       userId: user?.uid,
       ...searchParams,
     }),
-    queryFn: async ({
-      pageParam,
-    }: {
-      pageParam: DocumentSnapshot | undefined;
-    }) => {
+    queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
 
-      return AdvancedFirestoreService.searchBookmarks(user.uid, searchParams, {
-        pageSize,
-        lastDoc: pageParam,
-      });
+      return AdvancedFirestoreService.searchBookmarks(user.uid, searchParams);
     },
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.lastDoc : undefined;
@@ -126,13 +117,14 @@ export function useBookmarkMutations() {
 
       return { previousBookmarksData };
     },
-    onError: (err, newBookmark, context) => {
+    onError: (error, _, context) => {
       // Revert optimistic updates on error
       if (context?.previousBookmarksData) {
         context.previousBookmarksData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      console.error(error);
       toast.error("Failed to add bookmark");
     },
     onSuccess: (savedBookmark) => {
@@ -220,12 +212,14 @@ export function useBookmarkMutations() {
 
       return { previousData };
     },
-    onError: (err, variables, context) => {
+    onError: (err, _, context) => {
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      console.error(err);
+
       toast.error("Failed to update bookmark");
     },
     onSuccess: () => {
@@ -276,12 +270,14 @@ export function useBookmarkMutations() {
 
       return { previousData };
     },
-    onError: (err, deletedId, context) => {
+    onError: (err, _, context) => {
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      console.error(err);
+
       toast.error("Failed to delete bookmark");
     },
     onSuccess: () => {

@@ -1,5 +1,4 @@
 import Bookmarks from "@/components/bookmark/Bookmarks";
-import SearchBookmark from "@/components/bookmark/SearchBookmark";
 import React from "react";
 
 const BookmarkPage = () => {

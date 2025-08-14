@@ -118,7 +118,7 @@ export function BookmarkFormButton({
         ...prev,
         title: extractedTitle.charAt(0).toUpperCase() + extractedTitle.slice(1),
       }));
-    } catch (error) {
+    } catch (_) {
       // Invalid URL, ignore
     } finally {
       setIsExtractingTitle(false);

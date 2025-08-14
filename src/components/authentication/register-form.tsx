@@ -100,7 +100,7 @@ export function RegisterForm({
     try {
       await register(formData.email, formData.password, formData.name);
       // AuthContext will handle the redirect to /bookmark
-    } catch (error: any) {
+    } catch (error) {
       // Error is handled by AuthContext with toast notification
       console.error("Registration failed:", error);
     } finally {
@@ -114,7 +114,7 @@ export function RegisterForm({
     try {
       await loginWithGoogle();
       // AuthContext will handle the redirect to /bookmark
-    } catch (error: any) {
+    } catch (error) {
       // Error is handled by AuthContext with toast notification
       console.error("Google signup failed:", error);
     } finally {

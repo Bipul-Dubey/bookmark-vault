@@ -76,9 +76,6 @@ export const metadata: Metadata = {
     },
   },
 
-  // App-specific
-  manifest: "/manifest.json",
-
   // Additional meta tags
   other: {
     "mobile-web-app-capable": "yes",

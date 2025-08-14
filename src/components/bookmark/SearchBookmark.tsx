@@ -83,7 +83,7 @@ export default function SearchBookmark({
       if (urlFavorites) initialParams.favorite = true;
       onSearch(initialParams);
     }
-  }, []); // mount only
+  }, [onSearch]); // mount only
 
   const handleClear = () => {
     setQuery("");

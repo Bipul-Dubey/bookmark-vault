@@ -7,7 +7,7 @@ export const ErrorUI = ({
   message,
   refetch,
 }: {
-  message: String;
+  message: string;
   refetch: () => void;
 }) => {
   return (

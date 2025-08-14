@@ -82,7 +82,7 @@ export function LoginForm({
     try {
       await login(formData.email, formData.password);
       // AuthContext will handle the redirect to /bookmark
-    } catch (error: any) {
+    } catch (error) {
       // Error is handled by AuthContext with toast notification
       console.error("Login failed:", error);
     } finally {
@@ -96,7 +96,7 @@ export function LoginForm({
     try {
       await loginWithGoogle();
       // AuthContext will handle the redirect to /bookmark
-    } catch (error: any) {
+    } catch (error) {
       // Error is handled by AuthContext with toast notification
       console.error("Google login failed:", error);
     } finally {

@@ -14,22 +14,11 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-
-interface BookmarkStats {
-  totalBookmarks: number;
-  favoriteBookmarksCount: number;
-  uniqueTagsCount: number;
-  recentBookmarksCount: number;
-  averageTagsPerBookmark: number;
-  maxTagsOnSingleBookmark: number;
-  mostRecentBookmark?: {
-    title: string;
-    createdAt: Date;
-  };
-}
+import { LucideIcon } from "lucide-react";
+import { IBookmarkStats } from "@/types";
 
 interface BookmarkStatisticsProps {
-  stats: BookmarkStats;
+  stats: IBookmarkStats;
   isLoading: boolean;
   error: Error | null;
 }
@@ -49,7 +38,7 @@ export function BookmarkStatistics({
     iconColor,
     textColor,
   }: {
-    icon: any;
+    icon: LucideIcon;
     value: number;
     label: string;
     gradient: string;

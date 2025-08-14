@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Shield, Eye, EyeOff, Chrome } from "lucide-react";
+import { isErrorWithMessage } from "@/lib/utils";
 
 interface ReauthenticationModalProps {
   isOpen: boolean;
@@ -57,9 +58,12 @@ export function ReauthenticationModal({
       await reauthenticateWithPassword(password);
       onSuccess();
       handleClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Password re-authentication failed:", error);
-      setError(error.message || "Invalid password. Please try again.");
+      const errorMessage = isErrorWithMessage(error)
+        ? error.message
+        : "Invalid password. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -15,7 +15,6 @@ import {
   ExternalLink,
   Heart,
   MoreHorizontal,
-  Edit,
   Trash2,
   Copy,
   Calendar,
@@ -23,6 +22,7 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { IBookmark } from "@/types";
 import { BookmarkFormButton } from "./BookmarkFormButton";
+import Image from "next/image";
 
 interface BookmarkCardProps {
   bookmark: IBookmark;
@@ -74,11 +74,14 @@ export function BookmarkCard({
             {/* Favicon */}
             <div className="flex-shrink-0 mt-1">
               {!imageError && getFaviconUrl(bookmark.url) ? (
-                <img
+                <Image
                   src={getFaviconUrl(bookmark.url)!}
+                  loader={() => getFaviconUrl(bookmark.url)!}
                   alt=""
-                  className="w-4 h-4 rounded-sm"
+                  className="w-6 h-6 rounded-sm"
                   onError={() => setImageError(true)}
+                  width={30}
+                  height={30}
                 />
               ) : (
                 <div className="w-4 h-4 rounded-sm bg-muted flex items-center justify-center">

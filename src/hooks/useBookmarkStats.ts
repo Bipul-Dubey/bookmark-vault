@@ -5,17 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { IBookmark } from "@/types";
-
-interface BookmarkStats {
-  totalBookmarks: number;
-  favoriteBookmarksCount: number;
-  uniqueTagsCount: number;
-  recentBookmarksCount: number; // Added this week
-  averageTagsPerBookmark: number;
-  maxTagsOnSingleBookmark: number;
-  mostRecentBookmark?: IBookmark;
-}
+import { IBookmark, IBookmarkStats } from "@/types";
 
 interface TagInfo {
   tag: string;
@@ -79,7 +69,7 @@ export function useBookmarkStats() {
   };
 }
 
-function calculateBookmarkStats(bookmarks: IBookmark[]): BookmarkStats {
+function calculateBookmarkStats(bookmarks: IBookmark[]): IBookmarkStats {
   const totalBookmarks = bookmarks.length;
 
   if (totalBookmarks === 0) {
@@ -121,7 +111,7 @@ function calculateBookmarkStats(bookmarks: IBookmark[]): BookmarkStats {
   );
 
   // Get most recent bookmark
-  const mostRecentBookmark = bookmarks.length > 0 ? bookmarks[0] : undefined;
+  const mostRecentBookmark = bookmarks.length > 0 ? bookmarks[0] : null;
 
   return {
     totalBookmarks,
