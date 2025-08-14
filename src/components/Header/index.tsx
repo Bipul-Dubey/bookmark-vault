@@ -17,6 +17,7 @@ import { User, LogOut, Moon, Sun, Bookmark } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/context/AuthContext";
 import { getInitials } from "@/lib/utils";
+import { Logo } from "../Logo";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -41,10 +42,7 @@ export function Header() {
       <div className="flex h-14 items-center justify-between px-4 w-full">
         {/* Logo Section */}
         <Link href="/bookmark" className="flex items-center space-x-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
-            <Bookmark className="h-4 w-4" />
-          </div>
-          <span className="font-bold text-lg">Bookmark Vault</span>
+          <Logo size="xs" />
         </Link>
 
         {/* User Section */}
