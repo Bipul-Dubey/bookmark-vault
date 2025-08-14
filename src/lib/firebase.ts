@@ -1,7 +1,11 @@
 // lib/firebase.ts
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import {
+  getFirestore,
+  connectFirestoreEmulator,
+  initializeFirestore,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,7 +26,9 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Firestore
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
 
 // Connect to Firestore emulator in development (browser only)
 if (

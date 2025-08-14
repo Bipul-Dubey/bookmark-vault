@@ -7,4 +7,5 @@ export interface IBookmark {
   favorite: boolean;
   createdAt: Date;
   updatedAt: Date;
+  userId: string;
 }

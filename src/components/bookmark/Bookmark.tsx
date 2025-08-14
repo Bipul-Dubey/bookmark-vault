@@ -20,7 +20,7 @@ import {
   Copy,
   Calendar,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { IBookmark } from "@/types";
 
 interface BookmarkCardProps {
@@ -39,21 +39,6 @@ export function BookmarkCard({
   onCopyUrl,
 }: BookmarkCardProps) {
   const [imageError, setImageError] = useState(false);
-
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-    if (diffInHours < 1) {
-      return "Just now";
-    } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)}h ago`;
-    } else if (diffInHours < 24 * 7) {
-      return `${Math.floor(diffInHours / 24)}d ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
 
   const getDomainFromUrl = (url: string) => {
     try {
@@ -82,7 +67,7 @@ export function BookmarkCard({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow duration-200">
+    <Card className="group py-0 hover:shadow-md transition-shadow duration-200">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           {/* Left side - Favicon and content */}

@@ -5,6 +5,7 @@ import ThemesProvider from "@/components/common/theme-provider";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthGuard } from "@/components/AuthGuard";
+import { QueryProvider } from "@/context/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
         <Toaster />
         <ThemesProvider>
           <AuthProvider>
-            <AuthGuard>{children}</AuthGuard>
+            <QueryProvider>
+              <AuthGuard>{children}</AuthGuard>
+            </QueryProvider>
           </AuthProvider>
         </ThemesProvider>
       </body>
