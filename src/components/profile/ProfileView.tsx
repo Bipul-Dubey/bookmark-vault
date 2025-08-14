@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,23 +26,24 @@ import {
   Trash2,
   Loader2,
   AlertTriangle,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
-import { IBookmark } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils";
+import { useBookmarkStats } from "@/hooks/useBookmarkStats";
 
 export function ProfileView() {
   const { deleteAccount, user } = useAuth();
-  if (!user) return;
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const data: {
-    bookmarks: IBookmark[];
-    availableTags: IBookmark["tags"];
-  } = { bookmarks: [], availableTags: [] };
-  const { bookmarks, availableTags } = data;
+
+  // Fetch bookmark statistics
+  const { bookmarks, stats, topTags, isLoading, error } = useBookmarkStats();
+
+  if (!user) return null;
 
   const formatDate = (date: string | null) => {
     if (!date) return "Unknown";
@@ -78,11 +80,6 @@ export function ProfileView() {
       setIsDeleteDialogOpen(false);
     }
   };
-
-  const favoriteBookmarks = (bookmarks as IBookmark[]).filter(
-    (b) => b.favorite
-  );
-  const totalBookmarks = bookmarks.length;
 
   return (
     <div className="space-y-6">
@@ -131,18 +128,6 @@ export function ProfileView() {
 
           {/* Account Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* <div className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Account Status
-              </h3>
-              <div className="flex items-center space-x-2">
-                <Shield className="h-4 w-4 text-green-500" />
-                <Badge variant={user.emailVerified ? "default" : "secondary"}>
-                  {user.emailVerified ? "Verified" : "Unverified"}
-                </Badge>
-              </div>
-            </div> */}
-
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-muted-foreground">
                 Sign-in Method
@@ -164,81 +149,189 @@ export function ProfileView() {
                 {formatDate(user.metadata.lastSignInTime || null)}
               </p>
             </div>
-
-            {/* <div className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                User ID
-              </h3>
-              <p className="font-mono bg-muted px-2 py-1 rounded text-xs break-all">
-                {user.uid}
-              </p>
-            </div> */}
           </div>
         </CardContent>
       </Card>
 
-      {/* Bookmarks Statistics */}
+      {/* Bookmark Statistics */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Bookmark Statistics</CardTitle>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Bookmark Statistics
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Bookmark className="h-8 w-8 text-primary" />
-              </div>
-              <div className="text-2xl font-bold">{totalBookmarks}</div>
-              <div className="text-sm text-muted-foreground">
-                Total Bookmarks
-              </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="text-center p-4 bg-muted/50 rounded-lg">
+                  <Skeleton className="h-8 w-8 mx-auto mb-2" />
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </div>
+              ))}
             </div>
+          ) : error ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+              <p>Unable to load bookmark statistics</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Total Bookmarks */}
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg border">
+                <div className="flex items-center justify-center mb-2">
+                  <Bookmark className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                  {stats.totalBookmarks}
+                </div>
+                <div className="text-sm text-blue-600 dark:text-blue-400">
+                  Total Bookmarks
+                </div>
+              </div>
 
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Heart className="h-8 w-8 text-red-500" />
+              {/* Favorites */}
+              <div className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 rounded-lg border">
+                <div className="flex items-center justify-center mb-2">
+                  <Heart className="h-8 w-8 text-red-600 dark:text-red-400" />
+                </div>
+                <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+                  {stats.favoriteBookmarksCount}
+                </div>
+                <div className="text-sm text-red-600 dark:text-red-400">
+                  Favorites
+                </div>
               </div>
-              <div className="text-2xl font-bold">
-                {favoriteBookmarks.length}
-              </div>
-              <div className="text-sm text-muted-foreground">Favorites</div>
-            </div>
 
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Tag className="h-8 w-8 text-blue-500" />
+              {/* Unique Tags */}
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-lg border">
+                <div className="flex items-center justify-center mb-2">
+                  <Tag className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                  {stats.uniqueTagsCount}
+                </div>
+                <div className="text-sm text-green-600 dark:text-green-400">
+                  Unique Tags
+                </div>
               </div>
-              <div className="text-2xl font-bold">{availableTags.length}</div>
-              <div className="text-sm text-muted-foreground">Unique Tags</div>
+
+              {/* Recent Activity */}
+              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-lg border">
+                <div className="flex items-center justify-center mb-2">
+                  <Clock className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                  {stats.recentBookmarksCount}
+                </div>
+                <div className="text-sm text-purple-600 dark:text-purple-400">
+                  Added This Week
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Popular Tags */}
-      {availableTags.length > 0 && (
+      {!isLoading && !error && topTags.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Your Tags</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Tag className="h-5 w-5" />
+              Your Most Used Tags
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.slice(0, 20).map((tag) => {
-                const tagCount = bookmarks.filter((b) =>
-                  b.tags.includes(tag)
-                ).length;
-                return (
-                  <Badge key={tag} variant="secondary" className="text-sm">
-                    {tag} ({tagCount})
-                  </Badge>
-                );
-              })}
-              {availableTags.length > 20 && (
-                <Badge variant="outline">
-                  +{availableTags.length - 20} more
-                </Badge>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Top Tags */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                  Most Popular Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {topTags.slice(0, 15).map((tagInfo) => (
+                    <Badge
+                      key={tagInfo.tag}
+                      variant="secondary"
+                      className="text-sm flex items-center gap-1"
+                    >
+                      {tagInfo.tag}
+                      <span className="text-xs bg-muted-foreground/20 px-1.5 py-0.5 rounded-full">
+                        {tagInfo.count}
+                      </span>
+                    </Badge>
+                  ))}
+                  {topTags.length > 15 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{topTags.length - 15} more tags
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Stats */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Tag Usage
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Average tags per bookmark:</span>
+                      <span className="font-medium">
+                        {stats.averageTagsPerBookmark}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Most tagged bookmark:</span>
+                      <span className="font-medium">
+                        {stats.maxTagsOnSingleBookmark} tags
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {stats.mostRecentBookmark && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                      Latest Activity
+                    </h3>
+                    <div className="text-sm">
+                      <p className="truncate">
+                        <span className="font-medium">Latest bookmark:</span>{" "}
+                        {stats.mostRecentBookmark.title}
+                      </p>
+                      <p className="text-muted-foreground mt-1">
+                        Added{" "}
+                        {formatDate(
+                          stats.mostRecentBookmark.createdAt.toISOString()
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && stats.totalBookmarks === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No bookmarks yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Start building your bookmark collection by adding your first
+              bookmark.
+            </p>
+            <Button onClick={() => router.push("/bookmarks")}>
+              Go to Bookmarks
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -260,19 +353,24 @@ export function ProfileView() {
                   Are you sure you want to permanently delete your account? This
                   action cannot be undone.
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                  <div className="text-sm text-red-800 font-medium">
+                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                  <div className="text-sm text-red-800 dark:text-red-200 font-medium">
                     This will permanently delete:
                   </div>
-                  <ul className="text-sm text-red-700 mt-2 space-y-1 ml-4">
+                  <ul className="text-sm text-red-700 dark:text-red-300 mt-2 space-y-1 ml-4">
                     <li>• Your account and profile information</li>
-                    <li>• All your bookmarks ({totalBookmarks} bookmarks)</li>
-                    <li>• All your tags and collections</li>
+                    <li>
+                      • All your bookmarks ({stats.totalBookmarks} bookmarks)
+                    </li>
+                    <li>
+                      • All your tags and collections ({stats.uniqueTagsCount}{" "}
+                      unique tags)
+                    </li>
                     <li>• Your account preferences and settings</li>
                   </ul>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Please Confirm deletion.
+                  Please confirm deletion.
                 </div>
               </div>
             </AlertDialogDescription>
