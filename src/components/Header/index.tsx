@@ -1,7 +1,7 @@
 // components/layout/Header.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, LogOut, Moon, Sun, Bookmark } from "lucide-react";
+import { User, LogOut, Moon, Sun, Bookmark } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/context/AuthContext";
+import { getInitials } from "@/lib/utils";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -31,15 +32,6 @@ export function Header() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   if (!mounted) {
     return null; // Prevent hydration mismatch
   }
@@ -52,7 +44,7 @@ export function Header() {
           <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
             <Bookmark className="h-4 w-4" />
           </div>
-          <span className="font-bold text-lg">BookMark</span>
+          <span className="font-bold text-lg">Bookmark Vault</span>
         </Link>
 
         {/* User Section */}
