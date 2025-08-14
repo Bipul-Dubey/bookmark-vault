@@ -148,7 +148,7 @@ export function BookmarkCard({
           </div>
 
           {/* Right side - Actions */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex items-center gap-1 flex-wrap">
             {/* Favorite button */}
             <Button
               variant="ghost"

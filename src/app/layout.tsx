@@ -36,6 +36,11 @@ export const metadata: Metadata = {
     "bookmark sync",
     "personal bookmarks",
   ],
+  icons: {
+    icon: "/bookmark.png",
+    shortcut: "/bookmark.png",
+    apple: "/bookmark.png",
+  },
   authors: [{ name: "BookmarkVault Team" }],
   creator: "BookmarkVault",
   publisher: "BookmarkVault",
@@ -50,10 +55,10 @@ export const metadata: Metadata = {
     title: "BookmarkVault - Smart Bookmark Manager",
     description:
       "Organize, search, and manage your bookmarks with ease. Save links with custom tags, notes, and favorites.",
-    url: "https://BookmarkVault.com", // Replace with your actual domain
+    url: "https://bookmarkvault.netlify.app",
     images: [
       {
-        url: "bookmark.png",
+        url: "/bookmark.png",
         width: 1200,
         height: 630,
         alt: "BookmarkVault - Smart Bookmark Manager",
