@@ -10,11 +10,9 @@ import {
   query,
   where,
   orderBy,
-  limit,
   onSnapshot,
   serverTimestamp,
-  Timestamp,
-  setDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { IBookmark } from "@/types";
@@ -249,6 +247,96 @@ export class FirestoreService {
     } catch (error) {
       console.error("Error getting popular tags:", error);
       throw new Error("Failed to load popular tags");
+    }
+  }
+
+  static async deleteUserBookmarks(userId: string): Promise<void> {
+    try {
+      console.log(`Starting deletion of all data for user: ${userId}`);
+
+      // Query all bookmarks for this user
+      const bookmarksQuery = query(
+        collection(db, "bookmarks"),
+        where("userId", "==", userId)
+      );
+
+      const querySnapshot = await getDocs(bookmarksQuery);
+
+      if (querySnapshot.empty) {
+        console.log("No bookmarks found for user");
+        return;
+      }
+
+      // Use batch operations for efficient deletion
+      // Firestore batch limit is 500 operations
+      const batchSize = 500;
+      const batches: Promise<void>[] = [];
+
+      let batch = writeBatch(db);
+      let operationCount = 0;
+
+      querySnapshot.docs.forEach((docSnapshot) => {
+        batch.delete(docSnapshot.ref);
+        operationCount++;
+
+        // If we've reached the batch limit, commit this batch and start a new one
+        if (operationCount === batchSize) {
+          batches.push(batch.commit());
+          batch = writeBatch(db);
+          operationCount = 0;
+        }
+      });
+
+      // Commit the final batch if it has operations
+      if (operationCount > 0) {
+        batches.push(batch.commit());
+      }
+
+      // Wait for all batches to complete
+      await Promise.all(batches);
+
+      console.log(
+        `Successfully deleted ${querySnapshot.docs.length} bookmarks for user: ${userId}`
+      );
+    } catch (error) {
+      console.error("Error deleting user bookmarks:", error);
+      throw new Error(`Failed to delete user data: ${error}`);
+    }
+  }
+
+  /**
+   * Alternative implementation using individual deletions for smaller datasets
+   * Use this if you prefer individual operations or have fewer bookmarks
+   */
+  static async deleteUserBookmarksIndividual(userId: string): Promise<void> {
+    try {
+      console.log(`Starting individual deletion for user: ${userId}`);
+
+      const bookmarksQuery = query(
+        collection(db, "bookmarks"),
+        where("userId", "==", userId)
+      );
+
+      const querySnapshot = await getDocs(bookmarksQuery);
+
+      if (querySnapshot.empty) {
+        console.log("No bookmarks found for user");
+        return;
+      }
+
+      // Delete each bookmark individually
+      const deletePromises = querySnapshot.docs.map((docSnapshot) =>
+        deleteDoc(docSnapshot.ref)
+      );
+
+      await Promise.all(deletePromises);
+
+      console.log(
+        `Successfully deleted ${querySnapshot.docs.length} bookmarks for user: ${userId}`
+      );
+    } catch (error) {
+      console.error("Error deleting user bookmarks:", error);
+      throw new Error(`Failed to delete user data: ${error}`);
     }
   }
 }

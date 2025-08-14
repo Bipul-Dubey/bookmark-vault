@@ -121,7 +121,7 @@ export default function BookmarkList() {
   return (
     <div className="w-full mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">My Bookmarks</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -156,7 +156,7 @@ export default function BookmarkList() {
 
       {/* Bookmarks List */}
       {allBookmarks.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="p-4 text-center">
           <div className="text-muted-foreground">
             <p className="text-lg font-medium">
               {hasActiveSearch ? "No bookmarks found" : "No bookmarks yet"}

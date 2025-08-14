@@ -1,4 +1,4 @@
-// contexts/AuthContext.tsx
+// context/AuthContext.tsx
 "use client";
 
 import {
@@ -17,19 +17,15 @@ import {
   onAuthStateChanged,
   updateProfile,
   deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  GoogleAuthProvider,
+  reauthenticateWithPopup,
 } from "firebase/auth";
 import { auth, db, googleProvider } from "@/lib/firebase";
-import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
+import { FirestoreService } from "@/lib/firestore";
 
 const getAuthErrorMessage = (errorCode: string) => {
   switch (errorCode) {
@@ -55,8 +51,10 @@ const getAuthErrorMessage = (errorCode: string) => {
       return "Popup was blocked. Please allow popups and try again.";
     case "auth/network-request-failed":
       return "Network error. Please check your internet connection.";
+    case "auth/requires-recent-login":
+      return "For security reasons, please sign in again to delete your account.";
     default:
-      return "An error occurred during registration. Please try again.";
+      return "An error occurred during authentication. Please try again.";
   }
 };
 
@@ -69,6 +67,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUserProfile: (displayName: string) => Promise<void>;
   deleteAccount: () => Promise<void>;
+  reauthenticateWithPassword: (password: string) => Promise<void>;
+  reauthenticateWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -80,6 +80,8 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   updateUserProfile: async () => {},
   deleteAccount: async () => {},
+  reauthenticateWithPassword: async () => {},
+  reauthenticateWithGoogle: async () => {},
 });
 
 export const useAuth = () => {
@@ -183,40 +185,67 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Separate re-authentication methods
+  const reauthenticateWithPassword = async (password: string) => {
+    if (!user || !user.email) {
+      throw new Error("No authenticated user or email found");
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+      toast.success("Identity verified successfully");
+    } catch (error: any) {
+      console.error("Password re-authentication failed:", error);
+      if (error.code === "auth/wrong-password") {
+        throw new Error("Incorrect password. Please try again.");
+      }
+      throw new Error(getAuthErrorMessage(error.code));
+    }
+  };
+
+  const reauthenticateWithGoogle = async () => {
+    if (!user) {
+      throw new Error("No authenticated user found");
+    }
+
+    try {
+      const provider = new GoogleAuthProvider();
+      await reauthenticateWithPopup(user, provider);
+      toast.success("Identity verified successfully");
+    } catch (error: any) {
+      console.error("Google re-authentication failed:", error);
+      if (error.code === "auth/popup-closed-by-user") {
+        throw new Error("Sign-in popup was closed. Please try again.");
+      }
+      throw new Error(getAuthErrorMessage(error.code));
+    }
+  };
+
+  // Simplified delete account method
   const deleteAccount = async () => {
     if (!user) throw new Error("No user authenticated");
 
     try {
-      // Delete all user's bookmarks first
-      const bookmarksQuery = query(
-        collection(db, "bookmarks"),
-        where("userId", "==", user.uid)
-      );
-      const bookmarksSnapshot = await getDocs(bookmarksQuery);
+      console.log("Starting account deletion process...");
 
-      // Delete all user's bookmarks
-      const deletePromises = bookmarksSnapshot.docs.map((doc) =>
-        deleteDoc(doc.ref)
-      );
-      await Promise.all(deletePromises);
+      // Step 1: Delete user data from Firestore
+      console.log("Deleting user bookmarks...");
+      await FirestoreService.deleteUserBookmarks(user.uid);
+      console.log("User bookmarks deleted successfully");
 
-      // Delete user profile document
-      await deleteDoc(doc(db, "users", user.uid));
-
-      // Finally, delete the user account
+      // Step 2: Delete the Firebase user account
+      console.log("Deleting Firebase user account...");
       await deleteUser(user);
 
-      console.log("Account deleted successfully");
+      toast.success("Account deleted successfully");
+      console.log("Account deletion completed");
     } catch (error: any) {
       console.error("Delete account error:", error);
 
-      if (error.code === "auth/requires-recent-login") {
-        throw new Error(
-          "For security reasons, please sign out and sign back in before deleting your account."
-        );
-      }
-
-      throw new Error("Failed to delete account. Please try again.");
+      // Let the UI component handle the requires-recent-login error
+      // by showing the re-authentication modal
+      throw error;
     }
   };
 
@@ -229,6 +258,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     updateUserProfile,
     deleteAccount,
+    reauthenticateWithPassword,
+    reauthenticateWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
