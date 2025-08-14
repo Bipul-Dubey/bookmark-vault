@@ -1,17 +1,14 @@
-// components/bookmarks/BookmarkList.tsx
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInView } from "react-intersection-observer";
 import { BookmarkCard } from "./Bookmark";
-import { BookmarkEdit } from "./BookmarkEdit";
-import { AddBookmarkButton } from "./AddBookmarkModal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { IBookmark } from "@/types";
 import { BookmarkSearchParams } from "@/lib/firestore-advanced";
 import {
@@ -23,6 +20,7 @@ import { toast } from "sonner";
 import SearchBookmark from "./SearchBookmark";
 import { BookmarkListSkeleton } from "./BookmarkSkeleton";
 import { ErrorUI } from "./BookmarkComponent";
+import { BookmarkFormButton } from "./BookmarkFormButton";
 
 export default function BookmarkList() {
   const urlSearchParams = useSearchParams();
@@ -38,11 +36,6 @@ export default function BookmarkList() {
 
     return params;
   });
-
-  const [editingBookmark, setEditingBookmark] = useState<IBookmark | null>(
-    null
-  );
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // React Query hooks for data fetching
   const {
@@ -62,7 +55,7 @@ export default function BookmarkList() {
     refetch,
   } = useInfiniteBookmarks(searchParams);
 
-  const { updateBookmark, deleteBookmark, isUpdating } = useBookmarkMutations();
+  const { updateBookmark, deleteBookmark } = useBookmarkMutations();
 
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, inView } = useInView({
@@ -80,26 +73,6 @@ export default function BookmarkList() {
   const handleSearchChange = useCallback((params: BookmarkSearchParams) => {
     setSearchParams(params);
   }, []);
-
-  const handleEdit = (bookmark: IBookmark) => {
-    setEditingBookmark(bookmark);
-    setIsEditModalOpen(true);
-  };
-
-  const handleUpdateBookmark = async (bookmarkData: Partial<IBookmark>) => {
-    if (!editingBookmark) return;
-
-    try {
-      await updateBookmark({
-        id: editingBookmark.id,
-        updates: bookmarkData,
-      });
-      setIsEditModalOpen(false);
-      setEditingBookmark(null);
-    } catch (error) {
-      console.error("Error updating bookmark:", error);
-    }
-  };
 
   const handleDelete = async (bookmarkId: string) => {
     if (window.confirm("Are you sure you want to delete this bookmark?")) {
@@ -175,7 +148,7 @@ export default function BookmarkList() {
         </div>
 
         {/* Add Bookmark Button */}
-        <AddBookmarkButton />
+        <BookmarkFormButton featureType="create" />
       </div>
 
       {/* Search Component */}
@@ -193,7 +166,9 @@ export default function BookmarkList() {
                 ? "Try adjusting your search or filters"
                 : "Start by adding your first bookmark!"}
             </p>
-            {!hasActiveSearch && <AddBookmarkButton variant="outline" />}
+            {!hasActiveSearch && (
+              <BookmarkFormButton featureType="create" variant="outline" />
+            )}
           </div>
         </Card>
       ) : (
@@ -202,7 +177,6 @@ export default function BookmarkList() {
             <BookmarkCard
               key={bookmark.id}
               bookmark={bookmark}
-              onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleFavorite={() => handleToggleFavorite(bookmark)}
               onCopyUrl={handleCopyUrl}
@@ -241,18 +215,6 @@ export default function BookmarkList() {
           )}
         </div>
       )}
-
-      {/* Edit Modal */}
-      <BookmarkEdit
-        bookmark={editingBookmark}
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingBookmark(null);
-        }}
-        onSave={handleUpdateBookmark}
-        loading={isUpdating}
-      />
 
       {/* Global Loading Indicator */}
       {isFetching && !isFetchingNextPage && (

@@ -22,10 +22,10 @@ import {
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { IBookmark } from "@/types";
+import { BookmarkFormButton } from "./BookmarkFormButton";
 
 interface BookmarkCardProps {
   bookmark: IBookmark;
-  onEdit?: (bookmark: any) => void;
   onDelete?: (bookmarkId: string) => void;
   onToggleFavorite?: (bookmarkId: string) => void;
   onCopyUrl?: (url: string) => void;
@@ -33,7 +33,6 @@ interface BookmarkCardProps {
 
 export function BookmarkCard({
   bookmark,
-  onEdit,
   onDelete,
   onToggleFavorite,
   onCopyUrl,
@@ -164,6 +163,23 @@ export function BookmarkCard({
               />
             </Button>
 
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              onClick={handleOpenUrl}
+              className="h-7 w-7 p-0"
+            >
+              <ExternalLink />
+            </Button>
+
+            <BookmarkFormButton
+              featureType="edit"
+              variant="ghost"
+              bookmark={bookmark}
+              size="icon"
+              className="h-7 w-7 p-0"
+            />
+
             {/* More actions dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -172,17 +188,9 @@ export function BookmarkCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={handleOpenUrl}>
-                  <ExternalLink className="mr-2 h-3.5 w-3.5" />
-                  Open
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleCopyUrl}>
                   <Copy className="mr-2 h-3.5 w-3.5" />
                   Copy URL
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit?.(bookmark)}>
-                  <Edit className="mr-2 h-3.5 w-3.5" />
-                  Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onDelete?.(bookmark.id)}
