@@ -142,7 +142,7 @@ export default function TagSelector({
               className="max-h-60 overflow-y-auto"
               onWheel={(e) => e.stopPropagation()} // allow wheel scrolling
             >
-              <CommandEmpty>
+              <CommandEmpty className="h-fit">
                 {inputValue ? (
                   <div
                     className="flex items-center gap-1 px-2 py-1 cursor-pointer hover:bg-muted"
