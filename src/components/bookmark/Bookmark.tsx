@@ -95,12 +95,15 @@ export function BookmarkCard({
               {/* Title and URL */}
               <div className="space-y-1">
                 <h3
-                  className="font-medium text-sm line-clamp-2 group-hover:text-primary cursor-pointer"
+                  className="font-medium text-sm line-clamp-2 group-hover:text-primary cursor-pointer hover:underline"
                   onClick={handleOpenUrl}
                 >
                   {bookmark.title}
                 </h3>
-                <p className="text-xs text-muted-foreground truncate">
+                <p
+                  className="text-xs text-muted-foreground truncate cursor-pointer"
+                  onClick={handleOpenUrl}
+                >
                   {getDomainFromUrl(bookmark.url)}
                 </p>
               </div>

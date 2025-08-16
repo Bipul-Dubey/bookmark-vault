@@ -336,6 +336,7 @@ export function BookmarkFormButton({
                 placeholder="Add any notes about this bookmark..."
                 rows={3}
                 disabled={isLoading}
+                className="resize-none max-h-30"
               />
             </div>
 
@@ -404,19 +405,19 @@ export function BookmarkFormButton({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   {isEditMode ? "Updating..." : "Saving..."}
                 </>
               ) : (
                 <>
                   {isEditMode ? (
                     <>
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="h-4 w-4" />
                       Update Bookmark
                     </>
                   ) : (
                     <>
-                      <Plus className="mr-2 h-4 w-4" />
+                      <Plus className="h-4 w-4" />
                       Add Bookmark
                     </>
                   )}
